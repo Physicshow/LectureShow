@@ -18,7 +18,7 @@
 
 ### Download
 
-**[Download the Latest Version](#)**
+**[Download the Latest Version](https://github.com/physicshow/LectureShow/releases/latest)**
 
 ---
 
