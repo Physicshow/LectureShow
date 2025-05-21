@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QApplication
 from PyQt6.QtCore import Qt, QPropertyAnimation, QPoint, QSize, QTimer, pyqtProperty, QEasingCurve
-from PyQt6.QtGui import QPainter, QColor, QPen
+from PyQt6.QtGui import QPainter, QColor, QPen, QScreen
 import logging
 
 logger = logging.getLogger(__name__)
@@ -68,18 +68,40 @@ class ClickEffectWidget(QWidget):
     def color(self, color):
         self._color = color
         self.update()  # Refresh widget
+    
+    def get_dpi_scaled_pos(self, pos):
+        """화면 배율(DPI)을 고려한 좌표 변환"""
+        screen = QApplication.screenAt(pos)
+        if not screen:
+            screen = QApplication.primaryScreen()
+        
+        # 현재 스크린의 물리적 DPI 값
+        logical_dpi = screen.logicalDotsPerInch()
+        physical_dpi = screen.physicalDotsPerInch()
+        
+        # DPI 배율 계산 (Windows 디스플레이 설정의 배율)
+        dpi_scale = physical_dpi / logical_dpi
+        
+        # 좌표 보정
+        scaled_x = int(pos.x() / dpi_scale)
+        scaled_y = int(pos.y() / dpi_scale)
+        
+        return QPoint(scaled_x, scaled_y)
         
     def show_at(self, pos):
         logger.debug(f"Showing effect at position: {pos}")
+        # DPI 배율을 고려한 위치 계산
+        scaled_pos = self.get_dpi_scaled_pos(pos)
+        
         # Position widget (centered)
-        self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+        self.move(scaled_pos.x() - self.width()//2, scaled_pos.y() - self.height()//2)
         
         # Play full animation when not in drag mode
         if not self.is_drag:
             self._start_full_animation()
         else:
             self._start_half_animation()
-        
+    
     def _start_full_animation(self):
         # Configure size animation
         self.size_animation.setDuration(400)
@@ -124,13 +146,18 @@ class ClickEffectWidget(QWidget):
     def update_position(self, pos):
         """Update position during drag"""
         if self.is_drag and not self.is_complete:
-            self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+            # DPI 배율을 고려한 위치 계산
+            scaled_pos = self.get_dpi_scaled_pos(pos)
+            self.move(scaled_pos.x() - self.width()//2, scaled_pos.y() - self.height()//2)
     
     def complete_animation(self, pos):
         """Run remaining animation when drag completes"""
         if self.is_drag and not self.is_complete:
             self.is_complete = True
-            self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+            
+            # DPI 배율을 고려한 위치 계산
+            scaled_pos = self.get_dpi_scaled_pos(pos)
+            self.move(scaled_pos.x() - self.width()//2, scaled_pos.y() - self.height()//2)
             
             # Run the second half of the animation
             self.size_animation.setDuration(200)
