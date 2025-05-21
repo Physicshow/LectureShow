@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QApplication
 from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QPainter, QColor
 import logging
@@ -85,7 +85,21 @@ class CircleCursor(QWidget):
         painter.setBrush(self._color)  # 원 색상 및 투명도
         
         # 마우스 위치를 기준으로 원 그리기
-        pos = self.mapFromGlobal(self.cursor().pos())
+        cursor_pos = self.cursor().pos()
+        
+        # DPI 배율 보정
+        screen = QApplication.screenAt(cursor_pos)
+        if not screen:
+            screen = QApplication.primaryScreen()
+        
+        logical_dpi = screen.logicalDotsPerInch()
+        physical_dpi = screen.physicalDotsPerInch()
+        dpi_scale = physical_dpi / logical_dpi
+        
+        # 보정된 위치 계산
+        scaled_pos = QPoint(int(cursor_pos.x() / dpi_scale), int(cursor_pos.y() / dpi_scale))
+        pos = self.mapFromGlobal(scaled_pos)
+        
         circle_rect = QRect(
             pos.x() - self._size // 2,
             pos.y() - self._size // 2,
