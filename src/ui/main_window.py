@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
         logger.debug(f"Creating click effect at ({x}, {y})")
         effect = ClickEffectWidget()
         # 설정된 색상 적용
-        effect.color = QSettings().value("click_effect/color", QColor(255,255,255), type=QColor)
+        effect.color = QSettings().value("click_effect/color", QColor(255,0,0), type=QColor)
         effect.show_at(QPoint(x, y))
         logger.debug("Click effect created and shown")
         
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
         # Start drag - create drag effect
         self.drag_effects[button_type] = ClickEffectWidget(is_drag=True)
         # 설정된 색상 적용
-        self.drag_effects[button_type].color = QSettings().value("click_effect/color", QColor(255,255,255), type=QColor)
+        self.drag_effects[button_type].color = QSettings().value("click_effect/color", QColor(255,0,0), type=QColor)
         self.drag_effects[button_type].show_at(QPoint(x, y))
         logger.debug(f"Drag effect for {button_type} created and shown")
         
@@ -446,7 +446,7 @@ class MainWindow(QMainWindow):
         s = QSettings()
         
         # Circular cursor color - ZoomView와 관계없이 항상 적용
-        col = s.value("cursor/color", QColor(0,120,215), type=QColor)
+        col = s.value("cursor/color", QColor(255,20,147), type=QColor)
         if self.circle_cursor:
             self.circle_cursor.color = col  # color setter에서 불투명도 자동 적용
         
