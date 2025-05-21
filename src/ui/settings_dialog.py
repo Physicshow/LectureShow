@@ -331,9 +331,9 @@ class SettingsDialog(QDialog):
             "highlight/color2": QColor(144, 238, 144, 64), # 연두색
             "highlight/color3": QColor(255, 105, 180, 64), # 핑크
             "subtitle/fontsize": 50,
-            "cursor/color": QColor(0, 120, 215),
+            "cursor/color": QColor(255, 20, 147),          # 분홍색으로 변경
             "subtitle/bgcolor": QColor(60, 60, 60, 217),
-            "click_effect/color": QColor(255, 255, 255)
+            "click_effect/color": QColor(255, 0, 0)        # 빨간색으로 변경
         }
         for k, v in defaults.items():
             self.settings.setValue(k, v)
