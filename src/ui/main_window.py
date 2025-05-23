@@ -479,7 +479,12 @@ class MainWindow(QMainWindow):
             
             # Update OverlayWidget internal properties
             OverlayWidget.FONT_SIZE = fs
-            OverlayWidget.CARD_BG = bgcol.name(QColor.HexArgb)
+            OverlayWidget.BG_STYLE = bgcol.name(QColor.HexArgb)
+        
+        # Update subtitle visibility setting in overlay
+        if hasattr(self, 'overlay'):
+            subtitle_visible = s.value("subtitle/visible", True, type=bool)
+            self.overlay.set_visibility(subtitle_visible)
 
     def erase_at_position(self, pos):
         """Erase drawing at specified position"""
