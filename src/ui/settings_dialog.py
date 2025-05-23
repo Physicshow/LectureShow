@@ -1,7 +1,8 @@
 # src/ui/settings_dialog.py
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox,
-    QPushButton, QColorDialog, QSlider, QWidget, QGroupBox, QGridLayout
+    QPushButton, QColorDialog, QSlider, QWidget, QGroupBox, QGridLayout,
+    QCheckBox
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QColor, QPalette
@@ -83,6 +84,15 @@ class SettingsDialog(QDialog):
         self.set_button_color(self.subbg_btn, self.settings.value("subtitle/bgcolor", QColor(60,60,60,217), type=QColor))
         subbg_layout.addWidget(self.subbg_btn)
         basic_layout.addLayout(subbg_layout)
+
+        # Subtitle visibility checkbox
+        subtitle_visibility_layout = QHBoxLayout()
+        subtitle_visibility_layout.addWidget(QLabel("Show Subtitle:"))
+        self.subtitle_visibility_checkbox = QCheckBox()
+        # Load value with default ON (True)
+        self.subtitle_visibility_checkbox.setChecked(self.settings.value("subtitle/visible", True, type=bool))
+        subtitle_visibility_layout.addWidget(self.subtitle_visibility_checkbox)
+        basic_layout.addLayout(subtitle_visibility_layout)
 
         main_layout.addWidget(basic_group)
 
@@ -279,6 +289,8 @@ class SettingsDialog(QDialog):
         self.settings.setValue("highlight/opacity", self.hl_opacity_slider.value())
         self.settings.setValue("highlight/width", self.hl_width_spin.value())
         self.settings.setValue("subtitle/fontsize", self.sub_font_spin.value())
+        # Save subtitle visibility setting
+        self.settings.setValue("subtitle/visible", self.subtitle_visibility_checkbox.isChecked())
         
         # 하이라이트 색상들 투명도 업데이트
         alpha = self.hl_opacity_slider.value()
@@ -307,6 +319,9 @@ class SettingsDialog(QDialog):
             bg_style = f"rgba({r}, {g}, {b}, {a/255})"
             parent.overlay.BG_STYLE = bg_style
             
+            # Update subtitle visibility
+            parent.overlay.set_visibility(self.subtitle_visibility_checkbox.isChecked())
+            
             # 카드 스타일 업데이트
             if hasattr(parent.overlay, 'update_card_styles'):
                 parent.overlay.update_card_styles()
@@ -333,7 +348,8 @@ class SettingsDialog(QDialog):
             "subtitle/fontsize": 50,
             "cursor/color": QColor(255, 20, 147),          # 분홍색으로 변경
             "subtitle/bgcolor": QColor(60, 60, 60, 217),
-            "click_effect/color": QColor(255, 0, 0)        # 빨간색으로 변경
+            "click_effect/color": QColor(255, 0, 0),        # 빨간색으로 변경
+            "subtitle/visible": True                        # 자막 표시 기본값은 True
         }
         for k, v in defaults.items():
             self.settings.setValue(k, v)
@@ -343,6 +359,7 @@ class SettingsDialog(QDialog):
         self.hl_opacity_slider.setValue(defaults["highlight/opacity"])
         self.hl_width_spin.setValue(defaults["highlight/width"])
         self.sub_font_spin.setValue(defaults["subtitle/fontsize"])
+        self.subtitle_visibility_checkbox.setChecked(defaults["subtitle/visible"])
         
         # 모든 버튼 색상 업데이트
         self.set_button_color(self.cursor_color_btn, defaults["cursor/color"])
