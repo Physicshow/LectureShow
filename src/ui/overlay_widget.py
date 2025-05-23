@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QPoint
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QRect, QPoint, QSettings
 from PyQt6.QtGui import QColor
 from .click_effect import ClickEffectWidget
 import logging
@@ -48,6 +48,9 @@ class OverlayWidget(QWidget):
         self.is_visible = False
         self._anim_disconnect = False
         self.position = "left"  # Default: bottom left
+        
+        # Load subtitle visibility setting (default: ON)
+        self.subtitle_visible = QSettings().value("subtitle/visible", True, type=bool)
 
         logger.debug("OverlayWidget initialized")
 
@@ -58,7 +61,18 @@ class OverlayWidget(QWidget):
             if self.is_visible:
                 self.slide_in()
 
+    def set_visibility(self, visible):
+        """Set the visibility of subtitles"""
+        self.subtitle_visible = visible
+        # If subtitles are currently shown but should be hidden, hide them
+        if self.is_visible and not visible:
+            self.slide_out()
+
     def show_input(self, text):
+        # If subtitles are disabled, don't show anything
+        if not self.subtitle_visible:
+            return
+            
         # Remove existing cards
         for card in self.cards:
             self.layout.removeWidget(card)
