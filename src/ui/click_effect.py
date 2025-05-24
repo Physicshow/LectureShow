@@ -71,8 +71,8 @@ class ClickEffectWidget(QWidget):
         
     def show_at(self, pos):
         logger.debug(f"Showing effect at position: {pos}")
-        # Position widget (centered)
-        self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+        # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
+        self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
         
         # Play full animation when not in drag mode
         if not self.is_drag:
@@ -124,13 +124,15 @@ class ClickEffectWidget(QWidget):
     def update_position(self, pos):
         """Update position during drag"""
         if self.is_drag and not self.is_complete:
-            self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+            # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
+            self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
     
     def complete_animation(self, pos):
         """Run remaining animation when drag completes"""
         if self.is_drag and not self.is_complete:
             self.is_complete = True
-            self.move(pos.x() - self.width()//2, pos.y() - self.height()//2)
+            # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
+            self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
             
             # Run the second half of the animation
             self.size_animation.setDuration(200)
