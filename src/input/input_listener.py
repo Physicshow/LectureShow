@@ -152,6 +152,11 @@ class InputListener(QObject):
                 self.modifier_changed = True
                 self.update_modifier_display()
             
+            # 여기에 추가: 단독 modifier 키도 input_detected 시그널 발생
+            mod_text = '+'.join(self._get_modifiers())
+            if mod_text:
+                self.input_detected.emit(mod_text)
+            
             self.last_key_time = time.time()
             return
         
@@ -228,6 +233,21 @@ class InputListener(QObject):
         key_name = self._key_to_name(key)
         print(f"[DEBUG] key_release object: {key}, key_name: {key_name!r}")
         
+        # 수정: modifier 키가 떼어졌을 때 self.modifiers에서 제거
+        if self._is_modifier(key_name):
+            if key_name.lower() in ['ctrl', 'ctrl_l', 'ctrl_r']:
+                self.modifiers.discard('ctrl')
+            elif key_name.lower() in ['shift', 'shift_l', 'shift_r']:
+                self.modifiers.discard('shift')
+            elif key_name.lower() in ['alt', 'alt_l', 'alt_r']:
+                self.modifiers.discard('alt')
+            elif key_name.lower() in ['win', 'win_l', 'win_r', 'cmd', 'cmd_l', 'cmd_r']:
+                self.modifiers.discard('win')
+            
+            # 상태가 변경되었음을 표시
+            self.modifier_changed = True
+            self.update_modifier_display()
+    
     def on_mouse_click(self, x, y, button, pressed):
         button_name = str(button).replace('Button.', '').capitalize()
         button_type = "left" if button == mouse.Button.left else "right" if button == mouse.Button.right else "other"
@@ -458,15 +478,15 @@ class InputListener(QObject):
         mods = self._get_modifiers()
         mod_text = '+'.join(mods) if mods else ""
         
-        # Display if modifier key state has changed and is different from previous
-        if self.modifier_changed and self.last_modifier_set != set(mods):
+        # 수정: modifier_changed 확인 조건 제거
+        if self.last_modifier_set != set(mods):
             self.modifier_changed = False
             self.last_modifier_set = set(mods)
             if mod_text:
                 # Display only when there's a modifier
                 self.show_modifier.emit(mod_text)
                 # Automatic timer to hide (won't show if CTRL is held down)
-                self.modifier_timer.start(1000) 
+                self.modifier_timer.start(1000)
 
     def _is_key_number_1(self, key, key_name=None):
         """Check if key is number 1 in various ways"""
