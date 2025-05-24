@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QApplication
 from PyQt6.QtCore import Qt, QPropertyAnimation, QPoint, QSize, QTimer, pyqtProperty, QEasingCurve
 from PyQt6.QtGui import QPainter, QColor, QPen
 import logging
@@ -37,6 +37,11 @@ class ClickEffectWidget(QWidget):
         self.cleanup_timer = QTimer(self)
         self.cleanup_timer.setSingleShot(True)
         self.cleanup_timer.timeout.connect(self.deleteLater)
+        
+        # Get device pixel ratio for high DPI displays
+        self.pixel_ratio = QApplication.primaryScreen().devicePixelRatio()
+        logger.debug(f"Device pixel ratio: {self.pixel_ratio}")
+        
         logger.debug("ClickEffectWidget initialized")
     
     # Property for circle size
@@ -70,16 +75,21 @@ class ClickEffectWidget(QWidget):
         self.update()  # Refresh widget
         
     def show_at(self, pos):
-        logger.debug(f"Showing effect at position: {pos}")
-        # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
-        self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
+        logger.debug(f"Showing effect at position: {pos}, pixel ratio: {self.pixel_ratio}")
+        # 화면 배율을 고려한 위치 조정
+        adjusted_pos = QPoint(
+            int(pos.x() / self.pixel_ratio),
+            int(pos.y() / self.pixel_ratio)
+        )
+        # 위젯 위치 설정 (중앙에 표시)
+        self.move(adjusted_pos.x() - self.width()//2, adjusted_pos.y() - self.height()//2)
         
         # Play full animation when not in drag mode
         if not self.is_drag:
             self._start_full_animation()
         else:
             self._start_half_animation()
-        
+    
     def _start_full_animation(self):
         # Configure size animation
         self.size_animation.setDuration(400)
@@ -124,15 +134,23 @@ class ClickEffectWidget(QWidget):
     def update_position(self, pos):
         """Update position during drag"""
         if self.is_drag and not self.is_complete:
-            # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
-            self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
+            # 화면 배율을 고려한 위치 조정
+            adjusted_pos = QPoint(
+                int(pos.x() / self.pixel_ratio),
+                int(pos.y() / self.pixel_ratio)
+            )
+            self.move(adjusted_pos.x() - self.width()//2, adjusted_pos.y() - self.height()//2)
     
     def complete_animation(self, pos):
         """Run remaining animation when drag completes"""
         if self.is_drag and not self.is_complete:
             self.is_complete = True
-            # 원형 커서와 동일한 방식으로 위치 설정 (pos를 중심으로)
-            self.move(pos.x() - int(self._max_size), pos.y() - int(self._max_size))
+            # 화면 배율을 고려한 위치 조정
+            adjusted_pos = QPoint(
+                int(pos.x() / self.pixel_ratio),
+                int(pos.y() / self.pixel_ratio)
+            )
+            self.move(adjusted_pos.x() - self.width()//2, adjusted_pos.y() - self.height()//2)
             
             # Run the second half of the animation
             self.size_animation.setDuration(200)
