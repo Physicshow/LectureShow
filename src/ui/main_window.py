@@ -270,6 +270,11 @@ class MainWindow(QMainWindow):
             return
         
         try:
+            # 자막 상태 저장 및 비활성화
+            self.original_subtitle_visible = self.overlay.subtitle_visible
+            self.overlay.set_visibility(False)
+            logger.debug(f"Saved subtitle visibility state: {self.original_subtitle_visible}")
+            
             # Create zoom view
             self.zoom_view = ZoomView()
             self.zoom_view.main_window_overlay = self.overlay
@@ -333,20 +338,19 @@ class MainWindow(QMainWindow):
                 self.original_circle_cursor_size = zoom_view_cursor_size
                 self.original_circle_cursor_color = self.zoom_view.circle_cursor_color
             
-            # Restore circular cursor to original settings
+            # Update cursor with new size and show
             self.circle_cursor.size = self.original_circle_cursor_size
             self.circle_cursor.color = self.original_circle_cursor_color
-            
-            # Force circular cursor to show (workaround for issue)
-            self.circle_cursor.show()
-            logger.debug(f"Circle cursor FORCED to show at size {self.original_circle_cursor_size}")
-            
-            # Force UI state update
-            QApplication.processEvents()
-        else:
-            logger.debug("No zoom view or circle cursor reference found")
+            if self.zoom_view.circle_cursor_was_visible:
+                self.circle_cursor.show()
+                logger.debug(f"Restored and showed circle cursor with size {self.original_circle_cursor_size}")
         
-        # Remove zoom view reference
+        # 자막 상태 복원
+        if hasattr(self, 'original_subtitle_visible'):
+            self.overlay.set_visibility(self.original_subtitle_visible)
+            logger.debug(f"Restored subtitle visibility to {self.original_subtitle_visible}")
+        
+        # Reset zoom view
         self.zoom_view = None
 
     def keyPressEvent(self, event):
