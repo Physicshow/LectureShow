@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QApplication
 from PyQt6.QtCore import Qt, QPropertyAnimation, QTimer, pyqtProperty, QEasingCurve, QPoint, QPointF
 from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QPainterPath
 
 class ScrollEffectWidget(QWidget):
     def __init__(self, parent=None, direction="up"):
         super().__init__(parent)
+        self.pixel_ratio = QApplication.primaryScreen().devicePixelRatioF()
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
@@ -61,8 +62,19 @@ class ScrollEffectWidget(QWidget):
     
     def show_at(self, pos):
         """Display the scroll effect."""
-        # Display to the right of cursor
-        self.move(pos.x() - self.width() // 2, pos.y() - self.height() // 2)
+        # pos is assumed to be in physical pixels
+        logical_x = pos.x() / self.pixel_ratio
+        logical_y = pos.y() / self.pixel_ratio
+
+        # Define a fixed logical offset (e.g., 30 pixels to the right)
+        desired_logical_offset_x = 30
+        
+        # Calculate the final logical position for the widget's top-left corner
+        # The widget's height (self.height()) is assumed to be in logical pixels as set by setFixedSize
+        final_logical_x = logical_x + desired_logical_offset_x
+        final_logical_y = logical_y - (self.height() / 2)
+
+        self.move(int(final_logical_x), int(final_logical_y))
         
         # Fade in/out animation
         self.opacity_animation.setDuration(500)
