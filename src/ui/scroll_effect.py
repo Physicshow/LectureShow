@@ -62,7 +62,7 @@ class ScrollEffectWidget(QWidget):
     def show_at(self, pos):
         """Display the scroll effect."""
         # Display to the right of cursor
-        self.move(pos.x() + 30, pos.y() - self.height() // 2)
+        self.move(pos.x() - self.width() // 2, pos.y() - self.height() // 2)
         
         # Fade in/out animation
         self.opacity_animation.setDuration(500)
