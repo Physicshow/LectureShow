@@ -303,7 +303,7 @@ class InputListener(QObject):
 
         # Last input time update and timer start
         self.last_key_time = current_time
-        self.scroll_timer.start(self.scroll_debounce_time)
+        QTimer.singleShot(0, lambda: self.scroll_timer.start(self.scroll_debounce_time))
         # --- Scroll input processing logic end ---
         
         # Current modifier key state check and update (Ctrl+Scroll, etc.)
@@ -486,7 +486,7 @@ class InputListener(QObject):
                 # Display only when there's a modifier
                 self.show_modifier.emit(mod_text)
                 # Automatic timer to hide (won't show if CTRL is held down)
-                self.modifier_timer.start(1000)
+                QTimer.singleShot(0, lambda: self.modifier_timer.start(1000))
 
     def _is_key_number_1(self, key, key_name=None):
         """Check if key is number 1 in various ways"""
@@ -541,4 +541,4 @@ class InputListener(QObject):
             self.update_modifier_display()
         
         # Timer restart
-        self.reset_modifier_timer.start(2000) 
+        QTimer.singleShot(0, lambda: self.reset_modifier_timer.start(2000))

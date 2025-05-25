@@ -68,7 +68,7 @@ class ScrollEffectWidget(QWidget):
         """Display the scroll effect."""
         current_screen = QApplication.instance().primaryScreen()
         if current_screen:
-            self.pixel_ratio = current_screen.devicePixelRatioF()
+            self.pixel_ratio = current_screen.devicePixelRatio()
         else:
             logger.warning("ScrollEffectWidget: Could not get primary screen information. Using default pixel_ratio=1.0")
             self.pixel_ratio = 1.0 
