@@ -33,6 +33,9 @@ class MainWindow(QMainWindow):
         # Variables to save original circular cursor properties
         self.original_circle_cursor_size = self.circle_cursor.size
         self.original_circle_cursor_color = self.circle_cursor.color
+        self.click_effect_enabled = True
+        self.scroll_effect_enabled = True
+        self.click_effect_state_before_zoom = False
         
         # Create central widget
         self.central_widget = QWidget()
@@ -168,6 +171,8 @@ class MainWindow(QMainWindow):
             event.ignore()
     
     def show_click_effect(self, x, y):
+        if not self.click_effect_enabled:
+            return
         logger.debug(f"Creating click effect at ({x}, {y})")
         effect = ClickEffectWidget()
         # 설정된 색상 적용
@@ -177,12 +182,16 @@ class MainWindow(QMainWindow):
         
     def show_scroll_effect(self, x, y, direction):
         """Display scroll effect."""
+        if not self.scroll_effect_enabled:
+            return
         logger.debug(f"Creating scroll effect at ({x}, {y}), direction: {direction}")
         effect = ScrollEffectWidget(direction=direction)
         effect.show_at(QPoint(x, y))
         logger.debug("Scroll effect created and shown")
         
     def on_mouse_down(self, x, y, button_type):
+        if not self.click_effect_enabled:
+            return
         logger.debug(f"Mouse {button_type} down at ({x}, {y})")
         # Start drag - create drag effect
         self.drag_effects[button_type] = ClickEffectWidget(is_drag=True)
@@ -274,6 +283,13 @@ class MainWindow(QMainWindow):
             self.original_subtitle_visible = self.overlay.subtitle_visible
             self.overlay.set_visibility(False)
             logger.debug(f"Saved subtitle visibility state: {self.original_subtitle_visible}")
+
+            if self.click_effect_enabled:
+                self.click_effect_state_before_zoom = True
+                self.click_effect_enabled = False
+                logger.debug("Temporarily disabled click effect for zoom mode.")
+            else:
+                self.click_effect_state_before_zoom = False
             
             # Create zoom view
             self.zoom_view = ZoomView()
@@ -349,6 +365,11 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'original_subtitle_visible'):
             self.overlay.set_visibility(self.original_subtitle_visible)
             logger.debug(f"Restored subtitle visibility to {self.original_subtitle_visible}")
+
+        if self.click_effect_state_before_zoom:
+            self.click_effect_enabled = True
+            self.click_effect_state_before_zoom = False # Reset the flag
+            logger.debug("Restored click effect state after zoom mode.")
         
         # Reset zoom view
         self.zoom_view = None
@@ -489,6 +510,9 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'overlay'):
             subtitle_visible = s.value("subtitle/visible", True, type=bool)
             self.overlay.set_visibility(subtitle_visible)
+        
+        self.click_effect_enabled = s.value("click_effect/enabled", True, type=bool)
+        self.scroll_effect_enabled = s.value("scroll_effect/enabled", True, type=bool)
 
     def erase_at_position(self, pos):
         """Erase drawing at specified position"""

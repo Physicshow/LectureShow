@@ -16,7 +16,7 @@ class SettingsDialog(QDialog):
         flags &= ~Qt.WindowType.Tool
         flags |= Qt.WindowType.Window
         self.setWindowFlags(flags)
-        self.resize(450, 450)  # 창 크기 확대
+        self.resize(450, 550)  # 창 크기 확대
 
         self.settings = QSettings()
         main_layout = QVBoxLayout(self)
@@ -89,10 +89,25 @@ class SettingsDialog(QDialog):
         subtitle_visibility_layout = QHBoxLayout()
         subtitle_visibility_layout.addWidget(QLabel("Show Subtitle:"))
         self.subtitle_visibility_checkbox = QCheckBox()
-        # Load value with default ON (True)
         self.subtitle_visibility_checkbox.setChecked(self.settings.value("subtitle/visible", True, type=bool))
         subtitle_visibility_layout.addWidget(self.subtitle_visibility_checkbox)
         basic_layout.addLayout(subtitle_visibility_layout)
+
+        # Click effect enabled checkbox
+        click_effect_enabled_layout = QHBoxLayout()
+        click_effect_enabled_layout.addWidget(QLabel("Enable Click Effect:"))
+        self.click_effect_enabled_checkbox = QCheckBox()
+        self.click_effect_enabled_checkbox.setChecked(self.settings.value("click_effect/enabled", True, type=bool))
+        click_effect_enabled_layout.addWidget(self.click_effect_enabled_checkbox)
+        basic_layout.addLayout(click_effect_enabled_layout)
+
+        # Scroll effect enabled checkbox
+        scroll_effect_enabled_layout = QHBoxLayout()
+        scroll_effect_enabled_layout.addWidget(QLabel("Enable Scroll Effect:"))
+        self.scroll_effect_enabled_checkbox = QCheckBox()
+        self.scroll_effect_enabled_checkbox.setChecked(self.settings.value("scroll_effect/enabled", True, type=bool))
+        scroll_effect_enabled_layout.addWidget(self.scroll_effect_enabled_checkbox)
+        basic_layout.addLayout(scroll_effect_enabled_layout)
 
         main_layout.addWidget(basic_group)
 
@@ -289,8 +304,9 @@ class SettingsDialog(QDialog):
         self.settings.setValue("highlight/opacity", self.hl_opacity_slider.value())
         self.settings.setValue("highlight/width", self.hl_width_spin.value())
         self.settings.setValue("subtitle/fontsize", self.sub_font_spin.value())
-        # Save subtitle visibility setting
         self.settings.setValue("subtitle/visible", self.subtitle_visibility_checkbox.isChecked())
+        self.settings.setValue("click_effect/enabled", self.click_effect_enabled_checkbox.isChecked())
+        self.settings.setValue("scroll_effect/enabled", self.scroll_effect_enabled_checkbox.isChecked())
         
         # 하이라이트 색상들 투명도 업데이트
         alpha = self.hl_opacity_slider.value()
@@ -349,7 +365,9 @@ class SettingsDialog(QDialog):
             "cursor/color": QColor(255, 20, 147),          # 분홍색으로 변경
             "subtitle/bgcolor": QColor(60, 60, 60, 217),
             "click_effect/color": QColor(255, 0, 0),        # 빨간색으로 변경
-            "subtitle/visible": True                        # 자막 표시 기본값은 True
+            "subtitle/visible": True,                       # 자막 표시 기본값은 True
+            "click_effect/enabled": True,
+            "scroll_effect/enabled": True
         }
         for k, v in defaults.items():
             self.settings.setValue(k, v)
@@ -360,6 +378,8 @@ class SettingsDialog(QDialog):
         self.hl_width_spin.setValue(defaults["highlight/width"])
         self.sub_font_spin.setValue(defaults["subtitle/fontsize"])
         self.subtitle_visibility_checkbox.setChecked(defaults["subtitle/visible"])
+        self.click_effect_enabled_checkbox.setChecked(defaults["click_effect/enabled"])
+        self.scroll_effect_enabled_checkbox.setChecked(defaults["scroll_effect/enabled"])
         
         # 모든 버튼 색상 업데이트
         self.set_button_color(self.cursor_color_btn, defaults["cursor/color"])
