@@ -1,11 +1,15 @@
+import logging
 from PyQt6.QtWidgets import QWidget, QApplication
 from PyQt6.QtCore import Qt, QPropertyAnimation, QTimer, pyqtProperty, QEasingCurve, QPoint, QPointF
 from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QPainterPath
 
+logger = logging.getLogger(__name__)
+
 class ScrollEffectWidget(QWidget):
     def __init__(self, parent=None, direction="up"):
         super().__init__(parent)
-        self.pixel_ratio = QApplication.primaryScreen().devicePixelRatioF()
+        # self.pixel_ratio = QApplication.primaryScreen().devicePixelRatioF() # Removed
+        self.pixel_ratio = 1.0 # Default value
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
@@ -62,6 +66,13 @@ class ScrollEffectWidget(QWidget):
     
     def show_at(self, pos):
         """Display the scroll effect."""
+        current_screen = QApplication.instance().primaryScreen()
+        if current_screen:
+            self.pixel_ratio = current_screen.devicePixelRatioF()
+        else:
+            logger.warning("ScrollEffectWidget: Could not get primary screen information. Using default pixel_ratio=1.0")
+            self.pixel_ratio = 1.0 
+            
         # pos is assumed to be in physical pixels
         logical_x = pos.x() / self.pixel_ratio
         logical_y = pos.y() / self.pixel_ratio
